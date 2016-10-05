@@ -1,0 +1,28 @@
+language: python
+
+python:
+  - "2.7"
+
+install:
+  - pip install -r requirements-dev.txt
+
+script:
+  - flake8 --max-line-length 124 lambda_function.py
+
+before_deploy:
+  - virtualenv venv/
+  - source venv/bin/activate
+  - pip install -r requirements.txt
+  - mkdir build/
+  - zip -9 build/lambda_function.zip lambda_function.py
+  - pushd venv/lib/python2.7/site-packages
+  - zip -r9 ../../../../build/lambda_function.zip *
+  - popd
+  - pip install awscli
+
+deploy:
+  provider: script
+  script: aws lambda update-function-code --function-name gatekeeper-alexa-skill --zip-file fileb://build/lambda_function.zip
+  skip_cleanup: true
+  on:
+    branch: master
