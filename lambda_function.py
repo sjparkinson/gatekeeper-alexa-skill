@@ -13,10 +13,10 @@ logger.setLevel(logging.DEBUG)
 # Main function entrypoint, handles request routing.
 def lambda_handler(event, context):
     logger.info("Recieved event: {}".format(json.dumps(event)))
-    
+
     # Ensure we're recieving an event from the correct Alexa skill.
     if event['session']['application']['applicationId'] != APPLICATION_ID:
-        raise ValueError('The application ID was not valid.') 
+        raise ValueError('The application ID was not valid.')
 
     # The Smart Home API request namespace.
     namespace = event['header']['namespace']
