@@ -32,7 +32,7 @@ def handle_device_discovery(namespace):
 
     headers = {
         'messageId': str(uuid.uuid4()),
-        'name': 'DiscoverApplicancesResponse',
+        'name': 'DiscoverAppliancesResponse',
         'namespace': namespace,
         'payloadVersion': '2',
     }
