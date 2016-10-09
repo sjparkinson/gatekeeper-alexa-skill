@@ -23,7 +23,7 @@ before_deploy:
 
 deploy:
   provider: script
-  script: aws lambda update-function-code --function-name gatekeeper-alexa-skill --zip-file fileb://build/lambda_function.zip
+  script: aws lambda update-function-code --function-name gatekeeper-alexa-smart-home-skill --zip-file fileb://build/lambda_function.zip
   skip_cleanup: true
   on:
     branch: master
