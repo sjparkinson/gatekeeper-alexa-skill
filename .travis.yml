@@ -14,6 +14,7 @@ before_deploy:
   - source venv/bin/activate
   - pip install -r requirements.txt
   - mkdir build/
+  - perl -i -pe 's/@@(.*)@@/$ENV{$1}/eg' app.py # Substitute configuration from the environment.
   - zip -9 build/lambda_function.zip lambda_function.py
   - pushd venv/lib/python2.7/site-packages
   - zip -r9 ../../../../build/lambda_function.zip *
