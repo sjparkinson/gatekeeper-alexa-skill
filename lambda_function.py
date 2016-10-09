@@ -72,7 +72,7 @@ def handle_turn_on_control(namespace, payload):
     access_token = payload['accessToken']
 
     # The Particle device ID.
-    device_id = payload['applianceId']
+    device_id = payload['appliance']['applianceId']
 
     # Call the `prime` function on the device.
     url = PARTICLE_CLOUD_API_ENDPOINT + '/v1/devices/{}/prime'.format(device_id)
