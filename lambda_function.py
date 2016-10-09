@@ -76,9 +76,11 @@ def handle_turn_on_control(namespace, payload):
 
     # Call the `prime` function on the device.
     url = PARTICLE_CLOUD_API_ENDPOINT + '/v1/devices/{}/prime'.format(device_id)
-    requests.post(url, headers={
+    response = requests.post(url, headers={
         'Authorization': 'Bearer ' + access_token,
     })
+
+    logger.info("Response from Particle Cloud: {}".format(response.json()))
 
     headers = {
         'messageId': str(uuid.uuid4()),
