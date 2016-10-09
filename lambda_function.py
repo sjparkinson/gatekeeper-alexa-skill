@@ -4,6 +4,7 @@ import requests
 import uuid
 
 PARTICLE_CLOUD_API_ENDPOINT = 'https://api.particle.io'
+PARTICLE_CLOUD_AUTH_TOKEN = '@@PARTICLE_CLOUD_AUTH_TOKEN@@'
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -68,16 +69,13 @@ def handle_device_discovery(namespace):
 def handle_turn_on_control(namespace, payload):
     logger.info('Handling control request.')
 
-    # The OAuth2 access token for access to the Particle Cloud API.
-    access_token = payload['accessToken']
-
     # The Particle device ID.
     device_id = payload['appliance']['applianceId']
 
     # Call the `prime` function on the device.
     url = PARTICLE_CLOUD_API_ENDPOINT + '/v1/devices/{}/prime'.format(device_id)
     response = requests.post(url, headers={
-        'Authorization': 'Bearer ' + access_token,
+        'Authorization': 'Bearer ' + PARTICLE_CLOUD_AUTH_TOKEN,
     })
 
     logger.info("Response from Particle Cloud: {}".format(response.json()))
