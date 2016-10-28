@@ -18,17 +18,14 @@ def lambda_handler(event, context):
     namespace = event['header']['namespace']
 
     if namespace == 'Alexa.ConnectedHome.Discovery':
-        return handle_device_discovery(namespace)
+        return handle_device_discovery(namespace, event['payload'])
 
     if namespace == 'Alexa.ConnectedHome.Control':
         if event['header']['name'] == 'TurnOnRequest':
             return handle_turn_on_control(namespace, event['payload'])
 
-        if event['header']['name'] == 'HealthCheckRequest':
-            return handle_health_check(namespace, event['payload'])
 
-
-def handle_device_discovery(namespace):
+def handle_device_discovery(namespace, payload):
     logger.info('Handling discovery event.')
 
     headers = {
@@ -38,16 +35,36 @@ def handle_device_discovery(namespace):
         'payloadVersion': '2',
     }
 
+    # Call the `prime` function on the device.
+    url = PARTICLE_CLOUD_API_ENDPOINT + '/v1/devices/20003a000747343232363230' # Yea it's hardcoded.
+    device_info = requests.get(url, headers={
+        'Authorization': 'Bearer ' + PARTICLE_CLOUD_AUTH_TOKEN,
+    }).json()
+
+    # Particle cloud is having issues.
+    if response.status_code != 200:
+        return {
+            'header': {
+                'messageId': str(uuid.uuid4()),
+                'name': 'DependentServiceUnavailableError',
+                'namespace': namespace,
+                'payloadVersion': '2',
+            },
+            'payload': {
+                'dependentServiceName': 'Particle Cloud'
+            }
+        }
+
     payload = {
         'discoveredAppliances': [
             {
-                'applianceId': '20003a000747343232363230',
+                'applianceId': device_info['id'],
                 'manufacturerName': 'Particle Industries, Inc.',
                 'modelName': 'Particle Photon',
                 'version': 'v1',
-                'friendlyName': 'gatekeeper',
+                'friendlyName': device_info['name'],
                 'friendlyDescription': 'Gatekeeper connected via Particle Cloud',
-                'isReachable': True,
+                'isReachable': device_info['connected'],
                 'actions': [
                     'turnOn'
                 ],
@@ -80,6 +97,34 @@ def handle_turn_on_control(namespace, payload):
 
     logger.info("Response from Particle Cloud: {}".format(response.json()))
 
+    # Particle cloud is having issues.
+    if response.status_code != 200:
+        return {
+            'header': {
+                'messageId': str(uuid.uuid4()),
+                'name': 'DependentServiceUnavailableError',
+                'namespace': namespace,
+                'payloadVersion': '2',
+            },
+            'payload': {
+                'dependentServiceName': 'Particle Cloud'
+            }
+        }
+
+    # The door is already open.
+    if response.json()['return_value'] != 0:
+        return {
+            'header': {
+                'messageId': str(uuid.uuid4()),
+                'name': 'NotSupportedInCurrentModeError',
+                'namespace': namespace,
+                'payloadVersion': '2',
+            },
+            'payload': {
+                'currentDeviceMode': 'OTHER'
+            }
+        }
+
     headers = {
         'messageId': str(uuid.uuid4()),
         'name': 'TurnOnConfirmation',
@@ -93,30 +138,5 @@ def handle_turn_on_control(namespace, payload):
     }
 
     logger.info("Returning control response: {}".format(json.dumps(response)))
-
-    return response
-
-
-def handle_health_check(namespace):
-    logger.info('Handling health check request.')
-
-    headers = {
-        'messageId': str(uuid.uuid4()),
-        'name': 'TurnOnConfirmation',
-        'namespace': namespace,
-        'payloadVersion': '2',
-    }
-
-    payload = {
-        'description': 'Gatekeeper is probably online',
-        'isHealthy': True,
-    }
-
-    response = {
-        'header': headers,
-        'payload': payload,
-    }
-
-    logger.info("Returning health check response: {}".format(json.dumps(response)))
 
     return response
