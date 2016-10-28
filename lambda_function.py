@@ -36,10 +36,10 @@ def handle_device_discovery(namespace, payload):
     }
 
     # Call the `prime` function on the device.
-    url = PARTICLE_CLOUD_API_ENDPOINT + '/v1/devices/20003a000747343232363230' # Yea it's hardcoded.
-    device_info = requests.get(url, headers={
+    url = PARTICLE_CLOUD_API_ENDPOINT + '/v1/devices/20003a000747343232363230'  # Yea it's hardcoded.
+    response = requests.get(url, headers={
         'Authorization': 'Bearer ' + PARTICLE_CLOUD_AUTH_TOKEN,
-    }).json()
+    })
 
     # Particle cloud is having issues.
     if response.status_code != 200:
@@ -54,6 +54,8 @@ def handle_device_discovery(namespace, payload):
                 'dependentServiceName': 'Particle Cloud'
             }
         }
+
+    device_info = response.json()
 
     payload = {
         'discoveredAppliances': [
